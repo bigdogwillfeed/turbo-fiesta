@@ -26,6 +26,7 @@ jobs:
       run: |
         Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
         Install-Module -Name Posh-ACME -Scope CurrentUser
+        Install-Module -Name Az -Scope CurrentUser
       shell: pwsh
 
     # Runs a set of commands using the runners shell
