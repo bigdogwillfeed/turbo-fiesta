@@ -38,5 +38,5 @@ jobs:
         $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList c27b7019-25d0-42a0-8f11-6289ab43a250, $pass
         Connect-AzAccount -ServicePrincipal -Credential $cred -Tenant d828c29c-6770-492c-91d7-a10f91a876d5
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name coral-bush.gerhart.me -Verbose `
-                -CertificateFilePath $cert.PfxFullChain -CertificatePassword $cert.PfxPass -SslState SniEnabled
+                -CertificateFilePath $cert.PfxFullChain -CertificatePassword poshacme -SslState SniEnabled
       shell: pwsh
