@@ -32,7 +32,7 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: Generate and bind the certificate
       run: |
-        $cert = New-PACertificate 'gerhart.me','*.gerhart.me' -AcceptTOS -DnsSleep 15 -Verbose `
+        $cert = New-PACertificate 'coral-bush.gerhart.me' -AcceptTOS -DnsSleep 15 -Verbose `
                 -DnsPlugin Cloudflare -PluginArgs @{ CFTokenInsecure = '${{ secrets.CLOUDFLARE_TOKEN }}' }
         $pass = ConvertTo-SecureString -String "${{ secrets.AZURE_SECRET }}" -AsPlainText -Force
         $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList c27b7019-25d0-42a0-8f11-6289ab43a250, $pass
