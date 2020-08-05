@@ -46,4 +46,5 @@ jobs:
         Connect-AzAccount -ServicePrincipal -Credential $cred -Tenant d828c29c-6770-492c-91d7-a10f91a876d5
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name coral-bush.gerhart.me -Verbose `
                 -CertificateFilePath $cert.PfxFullChain -CertificatePassword $pass -SslState SniEnabled
+        Disconnect-AzAccount
       shell: pwsh
