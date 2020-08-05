@@ -29,10 +29,15 @@ jobs:
         Install-Module -Name Az -Scope CurrentUser
       shell: pwsh
 
-    # Runs a set of commands using the runners shell
+    # GUIDs for:
+    #  - the service principle (that I have no recollection how I created) c27b etc
+    #  - the Azure AD Tenant ID d828 etc
+    #  Would need a second step to bind a second domain in the case of an app that listens on all subdomains
+    #  Might also be valuable to stash the account details in the actions cache or in the repo (could seed locally one time)
+    #  The environmental variable POSHACME_HOME might be useful for that approach
     - name: Generate and bind the certificate
       run: |
-        $cert = New-PACertificate 'coral-bush.gerhart.me' -AcceptTOS -DnsSleep 15 -Verbose `
+        $cert = New-PACertificate 'gerhart.me','*.gerhart.me' -AcceptTOS -DnsSleep 15 -Verbose `
                 -DnsPlugin Cloudflare -PluginArgs @{ CFTokenInsecure = '${{ secrets.CLOUDFLARE_TOKEN }}' }
         $pass = ConvertTo-SecureString -String "${{ secrets.AZURE_SECRET }}" -AsPlainText -Force
         $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList c27b7019-25d0-42a0-8f11-6289ab43a250, $pass
