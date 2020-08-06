@@ -48,7 +48,5 @@ jobs:
                 -CertificateFilePath $cert.PfxFullChain -CertificatePassword $pass -SslState SniEnabled
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name gerhart.me -Verbose `
                 -CertificateFilePath $cert.PfxFullChain -CertificatePassword $pass -SslState SniEnabled
-        New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name *.gerhart.me -Verbose `
-                -CertificateFilePath $cert.PfxFullChain -CertificatePassword $pass -SslState SniEnabled
         Disconnect-AzAccount
       shell: pwsh
