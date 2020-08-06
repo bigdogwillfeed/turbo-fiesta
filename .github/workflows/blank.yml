@@ -46,7 +46,11 @@ jobs:
         Connect-AzAccount -ServicePrincipal -Credential $cred -Tenant d828c29c-6770-492c-91d7-a10f91a876d5
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name coral-bush.gerhart.me -Verbose `
                 -CertificateFilePath $cert.PfxFullChain -CertificatePassword $pass -SslState SniEnabled
+        New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name *.gerhart.me -Verbose `
+                -Thumbprint $cert.Thumbprint -SslState SniEnabled
+        Remove-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name gerhart.me -Verbose `
+                -Force -DeleteCertificate $True
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name gerhart.me -Verbose `
-                -CertificateFilePath $cert.PfxFullChain -CertificatePassword $pass -SslState SniEnabled
+                -Thumbprint $cert.Thumbprint -SslState SniEnabled
         Disconnect-AzAccount
       shell: pwsh
