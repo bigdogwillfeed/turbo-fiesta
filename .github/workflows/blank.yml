@@ -1,15 +1,14 @@
 # Renews TLS certificates on Azure Web Apps
 # You'll need:
+env:
 # - A Service Principle (App Registration) with Website Contributor and Web Plan Contributor roles
 #  - the Application ID of that principle
+  application-id: c27b7019-25d0-42a0-8f11-6289ab43a250
 #  - the Tenant ID of the active directory the principle is in
+  tenant-id: d828c29c-6770-492c-91d7-a10f91a876d5
 #  - the secret for the principle (secrets.AZURE_SECRET)
 # - CloudFlare as your DNS provider
 #  - an API Key with Zone - DNS - Edit and Zone - Zone - Read (secrets.CLOUDFLARE_TOKEN)
-
-env:
-  application-id: c27b7019-25d0-42a0-8f11-6289ab43a250
-  tenant-id: d828c29c-6770-492c-91d7-a10f91a876d5
 
 name: "Let's Encrypt"
 
@@ -41,8 +40,8 @@ jobs:
         $cert = New-PACertificate 'gerhart.me','*.gerhart.me' -AcceptTOS -DnsSleep 15 -PfxPass $pass -Verbose `
                 -DnsPlugin Cloudflare -PluginArgs @{ CFTokenInsecure = '${{ secrets.CLOUDFLARE_TOKEN }}' }
         $azpw = ConvertTo-SecureString -String '${{ secrets.AZURE_SECRET }}' -AsPlainText -Force
-        $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList '${{ application-id }}', $azpw
-        Connect-AzAccount -ServicePrincipal -Credential $cred -Tenant '${{ tenant-id }}'
+        $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList '${{ env.application-id }}', $azpw
+        Connect-AzAccount -ServicePrincipal -Credential $cred -Tenant '${{ env.tenant-id }}'
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name coral-bush.gerhart.me -Verbose `
                 -CertificateFilePath $cert.PfxFullChain -CertificatePassword $pass -SslState SniEnabled
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name *.gerhart.me -Verbose `
