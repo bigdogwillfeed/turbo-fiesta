@@ -1,27 +1,28 @@
-# This is a basic workflow to help you get started with Actions
+# Renews TLS certificates on Azure Web Apps
+# You'll need:
+env:
+# - A Service Principle (App Registration) with Website Contributor and Web Plan Contributor roles
+#  - the Application ID of that principle
+  application-id: c27b7019-25d0-42a0-8f11-6289ab43a250
+#  - the Tenant ID of the active directory the principle is in
+  tenant-id: d828c29c-6770-492c-91d7-a10f91a876d5
+#  - the secret for the principle (secrets.AZURE_SECRET)
+# - CloudFlare as your DNS provider
+#  - an API Key with Zone - DNS - Edit and Zone - Zone - Read (secrets.CLOUDFLARE_TOKEN)
 
-name: CI
+name: "Let's Encrypt"
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
-on:
-  push:
-    branches: [ master ]
+on: workflow_dispatch # runs manually. TODO: schedule
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  
+  renew-certs:
+    
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-
-    # Runs a single command using the runners shell
+    
     - name: Set up our powershell modules
       run: |
         Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
@@ -29,21 +30,18 @@ jobs:
         Install-Module -Name Az -Scope CurrentUser
       shell: pwsh
 
-    # GUIDs for:
-    #  - the service principle (that I have no recollection how I created) c27b etc
-    #  - the Azure AD Tenant ID d828 etc
-    #  Would need a second step to bind a second domain in the case of an app that listens on all subdomains
-    #  Might also be valuable to stash the account details in the actions cache or in the repo (could seed locally one time)
+    #  Might be valuable to stash the account details in the actions cache or in the repo (could seed locally one time)
     #  The environmental variable POSHACME_HOME might be useful for that approach
+    #  Right now, this generates a new account each time it runs
     - name: Generate and bind the certificate
       run: |
         Set-PAServer LE_STAGE
         $pass = (Get-Random -Count 15 -InputObject ([char[]]'abcdefghijklmnopqrstuvwxyz')) -join ''
         $cert = New-PACertificate 'gerhart.me','*.gerhart.me' -AcceptTOS -DnsSleep 15 -PfxPass $pass -Verbose `
                 -DnsPlugin Cloudflare -PluginArgs @{ CFTokenInsecure = '${{ secrets.CLOUDFLARE_TOKEN }}' }
-        $azpw = ConvertTo-SecureString -String "${{ secrets.AZURE_SECRET }}" -AsPlainText -Force
-        $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList c27b7019-25d0-42a0-8f11-6289ab43a250, $azpw
-        Connect-AzAccount -ServicePrincipal -Credential $cred -Tenant d828c29c-6770-492c-91d7-a10f91a876d5
+        $azpw = ConvertTo-SecureString -String '${{ secrets.AZURE_SECRET }}' -AsPlainText -Force
+        $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList '${{ application-id }}', $azpw
+        Connect-AzAccount -ServicePrincipal -Credential $cred -Tenant '${{ tenant-id }}'
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name coral-bush.gerhart.me -Verbose `
                 -CertificateFilePath $cert.PfxFullChain -CertificatePassword $pass -SslState SniEnabled
         New-AzWebAppSSLBinding -WebAppName coral-bush -ResourceGroupName gerhart-me -Name *.gerhart.me -Verbose `
